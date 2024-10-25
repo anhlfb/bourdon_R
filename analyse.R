@@ -204,10 +204,10 @@ ggplot(data_for_plot, aes(x = Category, y = Fraction)) +
 library(survival)
 library(survminer)
 
-list_latency_1 <- c()
-list_latency_5 <- c()
-list_latency_10 <- c()
-list_latency_15 <- c()
+list_latency_1 = c()
+list_latency_5 = c()
+list_latency_10 = c()
+list_latency_15 = c()
 
 for (k in 1:nbtop15) {
   data_top15 = read.csv(top15trials[k], header = TRUE)
@@ -306,3 +306,92 @@ ggsurvplot(fit,
 ### than the time of first fountain visit, then take the max value gate_test time
 ### We calculate then the latency = fountain time - gate_test time for each trials
 ### Then we add the latency in the group only if they are congruent (yll - yrr - bll - brr)
+### Task 04 - Extract specific conditions and calculate latency for each trial ###
+
+latency_reinforced_1 = c()
+latency_reinforced_5 = c()
+latency_reinforced_10 = c()
+latency_reinforced_15 = c()
+
+for (k in 1:nbtop15) {
+  data_top15 = read.csv(top15trials[k], header = TRUE)
+  for (trial in c(1, 5, 10, 15)) {
+    trial_data = subset(data_top15, essai == trial)
+
+    if (nrow(trial_data) == 0) next
+
+    relevant_data = subset(trial_data, comp %in% c("fountain_left", "fountain_right", "gate_test"))
+
+    if (nrow(relevant_data) == 0) next
+
+    fountain_visits = subset(relevant_data, comp %in% c("fountain_left", "fountain_right"))
+
+    if (nrow(fountain_visits) == 0) next
+
+    first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
+    first_fountain_time = first_fountain_visit$t.f
+    cote_reinforce = unique(first_fountain_visit$cote.renforce)[1]
+    color = unique(first_fountain_visit$coul.renforcee)[1]
+
+    valid_condition = (color == "yellow" & cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") |
+                      (color == "yellow" & cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right") |
+                      (color == "blue" & cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") |
+                      (color == "blue" & cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right")
+
+    if (!valid_condition) next
+
+    gate_test_times = relevant_data$t.f[relevant_data$comp == "gate_test" & relevant_data$t.f < first_fountain_time]
+
+    if (length(gate_test_times) == 0) next
+
+    last_gate_test_time = max(gate_test_times, na.rm = TRUE)
+
+    latency = first_fountain_time - last_gate_test_time
+
+    if (latency > 0) {
+      if (trial == 1) {
+        latency_reinforced_1 = c(latency_reinforced_1, latency)
+      } else if (trial == 5) {
+        latency_reinforced_5 = c(latency_reinforced_5, latency)
+      } else if (trial == 10) {
+        latency_reinforced_10 = c(latency_reinforced_10, latency)
+      } else if (trial == 15) {
+        latency_reinforced_15 = c(latency_reinforced_15, latency)
+      }
+    }
+  }
+}
+
+
+average_latency_1 = mean(latency_reinforced_1, na.rm = TRUE)
+average_latency_5 = mean(latency_reinforced_5, na.rm = TRUE)
+average_latency_10 = mean(latency_reinforced_10, na.rm = TRUE)
+average_latency_15 = mean(latency_reinforced_15, na.rm = TRUE)
+
+print(paste("15. Average latency in trial 1 is:", average_latency_1))
+print(paste("16. Average latency in trial 5 is:", average_latency_5))
+print(paste("17. Average latency in trial 10 is:", average_latency_10))
+print(paste("18. Average latency in trial 15 is:", average_latency_15))
+
+latency_yellow = c(
+  latency_reinforced_1[which(data_top15$coul.renforcee == "yellow" & data_top15$cote.renforce == "left")],
+  latency_reinforced_5[which(data_top15$coul.renforcee == "yellow" & data_top15$cote.renforce == "right")],
+  latency_reinforced_10[which(data_top15$coul.renforcee == "yellow" & data_top15$cote.renforce == "left")],
+  latency_reinforced_15[which(data_top15$coul.renforcee == "yellow" & data_top15$cote.renforce == "right")]
+)
+
+latency_blue = c(
+  latency_reinforced_1[which(data_top15$coul.renforcee == "blue" & data_top15$cote.renforce == "left")],
+  latency_reinforced_5[which(data_top15$coul.renforcee == "blue" & data_top15$cote.renforce == "right")],
+  latency_reinforced_10[which(data_top15$coul.renforcee == "blue" & data_top15$cote.renforce == "left")],
+  latency_reinforced_15[which(data_top15$coul.renforcee == "blue" & data_top15$cote.renforce == "right")]
+)
+
+latency_data_colors = data.frame(
+  Latency = c(latency_yellow, latency_blue),
+  Color = factor(c(rep("Yellow", length(latency_yellow)),
+                   rep("Blue", length(latency_blue))))
+)
+
+surv_obj_colors = Surv(time = latency_data_colors$Latency)
+fit_colors = survfit(Surv(Latency) ~ Color, data = latency_data_colors)
