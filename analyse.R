@@ -374,17 +374,17 @@ print(paste("17. Average latency in trial 10 is:", average_latency_10))
 print(paste("18. Average latency in trial 15 is:", average_latency_15))
 
 latency_yellow = c(
-  latency_reinforced_1[which(data_top15$coul.renforcee == "yellow" & data_top15$cote.renforce == "left")],
-  latency_reinforced_5[which(data_top15$coul.renforcee == "yellow" & data_top15$cote.renforce == "right")],
-  latency_reinforced_10[which(data_top15$coul.renforcee == "yellow" & data_top15$cote.renforce == "left")],
-  latency_reinforced_15[which(data_top15$coul.renforcee == "yellow" & data_top15$cote.renforce == "right")]
+  latency_reinforced_1[data_top15$coul.renforcee == "yellow" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
+  latency_reinforced_5[data_top15$coul.renforcee == "yellow" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
+  latency_reinforced_10[data_top15$coul.renforcee == "yellow" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
+  latency_reinforced_15[data_top15$coul.renforcee == "yellow" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")]
 )
 
 latency_blue = c(
-  latency_reinforced_1[which(data_top15$coul.renforcee == "blue" & data_top15$cote.renforce == "left")],
-  latency_reinforced_5[which(data_top15$coul.renforcee == "blue" & data_top15$cote.renforce == "right")],
-  latency_reinforced_10[which(data_top15$coul.renforcee == "blue" & data_top15$cote.renforce == "left")],
-  latency_reinforced_15[which(data_top15$coul.renforcee == "blue" & data_top15$cote.renforce == "right")]
+  latency_reinforced_1[data_top15$coul.renforcee == "blue" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
+  latency_reinforced_5[data_top15$coul.renforcee == "blue" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
+  latency_reinforced_10[data_top15$coul.renforcee == "blue" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
+  latency_reinforced_15[data_top15$coul.renforcee == "blue" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")]
 )
 
 latency_data_colors = data.frame(
@@ -394,4 +394,71 @@ latency_data_colors = data.frame(
 )
 
 surv_obj_colors = Surv(time = latency_data_colors$Latency)
+
 fit_colors = survfit(Surv(Latency) ~ Color, data = latency_data_colors)
+#print(summary(fit))
+
+### Task 05
+### Testing with the function
+### We calculate the total distance traveled using x and y
+### Then we divide the total distance by the time taken from capture to the first fountain visit.
+
+calculate_average_speed = function(data, trials) {
+  speed_results = list()
+
+  for (trial in trials) {
+    trial_data = subset(data, essai == trial)
+
+    if (nrow(trial_data) == 0) next
+
+    capture_point = trial_data[trial_data$comp == "capture", ]
+    if (nrow(capture_point) == 0) next
+    capture_point <- capture_point[1, ]
+
+    fountain_visits = trial_data[trial_data$comp %in% c("fountain_left", "fountain_right"), ]
+    if (nrow(fountain_visits) == 0) next
+
+    first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
+
+    total_distance = sum(sqrt(diff(trial_data$x.px)^2 + diff(trial_data$y.px)^2))
+
+    time_taken = first_fountain_visit$t.f - capture_point$t.f
+    if (time_taken == 0) next
+
+    average_speed = total_distance / time_taken
+
+    speed_results[[as.character(trial)]] = average_speed
+  }
+
+  return(speed_results)
+}
+
+all_speed_results = list()
+for (k in 1:nbtop15) {
+  data_top15 = read.csv(top15trials[k], header = TRUE)
+  speed_results = calculate_average_speed(data_top15, c(1, 5, 10, 15))
+
+  all_speed_results[[k]] = speed_results
+}
+
+calculate_mean_se = function(speed_list, trial) {
+  speeds = unlist(lapply(speed_list, function(x) if (!is.null(x[[as.character(trial)]])) x[[as.character(trial)]] else NA))
+  speeds = speeds[!is.na(speeds)]
+
+  mean_speed = mean(speeds)
+  se_speed = sd(speeds) / sqrt(length(speeds))
+
+  return(list(mean = mean_speed, se = se_speed))
+}
+
+mean_speed_1 = calculate_mean_se(all_speed_results, 1)
+mean_speed_5 = calculate_mean_se(all_speed_results, 5)
+mean_speed_10 = calculate_mean_se(all_speed_results, 10)
+mean_speed_15 = calculate_mean_se(all_speed_results, 15)
+
+print(paste("Average speed in trial 1:", mean_speed_1$mean, "±", mean_speed_1$se))
+print(paste("Average speed in trial 5:", mean_speed_5$mean, "±", mean_speed_5$se))
+print(paste("Average speed in trial 10:", mean_speed_10$mean, "±", mean_speed_10$se))
+print(paste("Average speed in trial 15:", mean_speed_15$mean, "±", mean_speed_15$se))
+
+### Use function, it would make the code clearer
