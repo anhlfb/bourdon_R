@@ -1,9 +1,9 @@
 ### CLEAN THE DATA ###
 rm(list=ls())
 #print(list.files())
-data_path = "../data/"
+data_path = "data/"
 
-fichiers = list.files(data_path, pattern=".csv")
+fichiers = list.files(data_path, pattern="\\.csv$", full.names = TRUE)
 nbFichiers = length(fichiers)
 
 top15trials = c()
@@ -244,6 +244,18 @@ for (k in 1:nbtop15) {
   }
 }
 
+average_latency01 = mean(list_latency_1)
+average_latency05 = mean(list_latency_5)
+average_latency10 = mean(list_latency_10)
+average_latency15 = mean(list_latency_15)
+
+print(paste("11. Average latency in trial 01 is:", average_latency01))
+print(paste("12. Average latency in trial 05 is:", average_latency05))
+print(paste("13. Average latency in trial 10 is:", average_latency10))
+print(paste("14. Average latency in trial 15 is:", average_latency15))
+
+
+
 
 ### Create the survival curve ###
 ### 01. Create first the data frame with all the latency-trial lists
@@ -266,7 +278,7 @@ surv_obj = Surv(time = latency_data$Latency)
 fit = survfit(Surv(Latency) ~ Trial, data = latency_data)
 
 ### 03. Print the table to check the time each bee reach the zone ###
-print(summary(fit))
+#print(summary(fit))
 
 ### 04. Plot plot plot ###
 

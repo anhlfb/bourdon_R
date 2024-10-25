@@ -10,13 +10,13 @@ We are analysing 187 trajectories of the **Bombus terrestris** bumblebee in an a
 | Column            | Description                                                               |
 |-------------------|---------------------------------------------------------------------------|
 | `t.f`             | Time in terms of video frames (10 fps)                                    |
-| `x.px`            | Position in pixels on the x-axis                                           |
-| `y.px`            | Position in pixels on the y-axis                                           |
-| `comp`            | Compartment where the bee is located (see slides 3 and 4 for details)      |
-| `coul.renforce`   | Reinforced colour during the test (`yellow` or `blue`)                      |
-| `cote.renforce`   | Side where the reinforced colour was located (`left` or `right`)            |
-| `id.bourdon`      | Unique identifier for the bumblebee                                        |
-| `essai`           | Trial number of the bumblebee (varies between **1** and **31**)            |
+| `x.px`            | Position in pixels on the x-axis                                          |
+| `y.px`            | Position in pixels on the y-axis                                          |
+| `comp`            | Compartment where the bee is located (see slides 3 and 4 for details)     |
+| `coul.renforce`   | Reinforced colour during the test (`yellow` or `blue`)                    |
+| `cote.renforce`   | Side where the reinforced colour was located (`left` or `right`)          |
+| `id.bourdon`      | Unique identifier for the bumblebee                                       |
+| `essai`           | Trial number of the bumblebee (varies between **1** and **31**)           |
 
 ### Additional Information
 
@@ -31,7 +31,7 @@ The data files are named as follows: `frame_date_bee_xy_trial=z_tab.csv`
 
 | Element        | Description                                          |
 |----------------|------------------------------------------------------|
-| `date`         | Date of the test in the format `year-month-day`       |
+| `date`         | Date of the test in the format `year-month-day`      |
 | `xy`           | Identification number of the bee                     |
 | `z`            | Trial number                                         |
 
