@@ -11,7 +11,7 @@ top15trials = c()
 ### First take files with trial < 16, then check files and count the colours, then do the maths ###
 for (k in 1:nbFichiers) {
   donnees = read.csv(fichiers[k], header=TRUE, sep = ",", dec = ".", fill = TRUE, comment.char = "")
-  if (any(donnees[,8] < 16)) {
+  if (any(donnees$essai < 16)) {
     top15trials = c(top15trials, fichiers[k])
   }
 }
@@ -41,8 +41,8 @@ for (k in 1:nbtop15) {
   }
 
   first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
-  cote_reinforce = unique(first_fountain_visit$cote.renforce)[1]
-  color = unique(first_fountain_visit$coul.renforcee)[1]
+  cote_reinforce = unique(first_fountain_visit$cote.renforce)
+  color = unique(first_fountain_visit$coul.renforcee)
   if (color == "yellow") {
     nb_yellow = nb_yellow + 1
   }
@@ -172,9 +172,9 @@ vec_blu00 = rep(x=0, times = nb_blue)
 vec_blu = c(vec_blu00, vec_blu01)
 
 result_vec_yel = calculate_sd_se(vec_yel)
-print(paste("09. Standard error for merg_vector is", result_vec_yel$se))
+print(paste("09. Standard error for yellow vector is", result_vec_yel$se))
 result_vec_blu = calculate_sd_se(vec_blu)
-print(paste("10. Standard error for merg_vector is", result_vec_blu$se))
+print(paste("10. Standard error for blue vector is", result_vec_blu$se))
 
 data_for_plot <- data.frame(
   Category = c("Yellow Gates", "Blue Gates"),

@@ -1,5 +1,4 @@
-# bourdon_R
-# Project Bourdon 11 - Reinforced Side
+# Project 11 - Apprentissage avec les bourdons
 
 ## Project Description
 
@@ -41,18 +40,18 @@ The data files are named as follows: `frame_date_bee_xy_trial=z_tab.csv`
 
 ### 1. Fraction of Choices for the Reinforced Side-Fountain
 
-- **Objective:** Calculate the fraction of choices for the reinforced side and the fountain side (2 groups ll-rr), with the **standard error (± SE)**, over trials **1 to 15**.
+- **Objective:** Calculate the fraction of choices for the reinforced side and the fountain side (2 groups: left side and left fountain (ll) AND right side and right fountain(rr)), with the **standard error (± SE)**, over trials **1 to 15**.
 - **Visualisation:** Create a **graph** showing how this fraction evolves over the trials.
 
 ### 2. Analysis by Colour (Yellow / Blue)
 
-- **Objective:** Perform the same analysis as above, but add reinforced colours **yellow** and **blue** together with the reinforced sides **left** and **right** (4 groups: yll, yrr, bll, brr)
+- **Objective:** Perform the same analysis as above, but add reinforced colours **yellow** (y) and **blue** (b) together with the reinforced sides **left** and **right** (4 groups: yll, yrr, bll, brr)
 - **Visualisation:** Create a comparative **graph** of the fractions for each colour.
 
 ### 3. Average Latency between Exit and Arrival at Food Zone
 
 - **Objective:** Calculate the **average latency** between the exit from the `gate_test` compartment and the first arrival at a food zone (`fountain_left` or `fountain_right`).
-- **Visualisation:** Create a **survival curve** (see [Wikipedia: Survival Analysis](https://en.wikipedia.org/wiki/Survival_analysis)) to compare trials **1, 5, 10, and 15**.
+- **Visualisation:** Create a **survival curve** to compare trials **1, 5, 10, and 15**.
 
 ### 4. Comparative Survival Curve (Reinforced Colour vs Non-Reinforced)
 
