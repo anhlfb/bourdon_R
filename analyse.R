@@ -176,7 +176,7 @@ print(paste("09. Standard error for yellow vector is", result_vec_yel$se))
 result_vec_blu = calculate_sd_se(vec_blu)
 print(paste("10. Standard error for blue vector is", result_vec_blu$se))
 
-data_for_plot <- data.frame(
+data_for_plot = data.frame(
   Category = c("Yellow Gates", "Blue Gates"),
   Fraction = c(fraction_yellow_fountain_reinforced, fraction_blue_fountain_reinforced),
   SE = c(result_vec_yel$se, result_vec_blu$se)
