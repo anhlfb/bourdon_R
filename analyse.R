@@ -281,24 +281,19 @@ fit = survfit(Surv(Latency) ~ Trial, data = latency_data)
 #print(summary(fit))
 
 ### 04. Plot plot plot ###
+plot(fit,
+     col = c("blue", "red", "green", "purple"),
+     lwd = 2,
+     lty = 1:4,
+     main = "Survival curve for Bee Latency",
+     xlab = "Time reached Fountain (seconds)",
+     ylab = "Proportion of Bees Not Reaching Fountain")
 
-### Plot moche ###
-plot(fit, mark.time = TRUE, palette = c("#E7B800", "#2E9FDF", "#D95F02", "#7570B3"), title = "Survival Curves for Latency by Trial",
-xlab = "Time (seconds)",
-ylab = "Proportion of Bees Not Reaching Fountain"
-)
-
-### Joli plot =)) ###
-ggsurvplot(fit,
-           data = latency_data,
-           risk.table = TRUE,
-           pval = TRUE,
-           conf.int = TRUE,
-           ggtheme = theme_minimal(),
-           palette = c("#E7B800", "#2E9FDF", "#D95F02", "#7570B3"),
-           title = "Survival Curves for Latency by Trial",
-           xlab = "Time (seconds)",
-           ylab = "Proportion of Bees Not Reaching Fountain")
+  legend("topright",
+       legend = c("Trial 1", "Trial 5", "Trial 10", "Trial 15"),
+       col = c("blue", "red", "green", "purple"),
+       lwd = 2,
+       lty = 1:4)
 
 
 ### Task 04
