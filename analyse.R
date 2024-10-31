@@ -189,32 +189,36 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
   for (file in file_list) {
     data = read.csv(file, header = TRUE)
 
+    data$x.cm = data$x.px / 75
+    data$y.cm = data$y.px / 75
+
     for (trial in trials) {
       trial_data = subset(data, essai == trial)
 
       if (nrow(trial_data) == 0) next
 
-      capture_point = trial_data[trial_data$comp == "capture", ]
-      if (nrow(capture_point) == 0) next
-      capture_point = capture_point[1, ]
+      gate_point = trial_data[trial_data$comp == "gate_test", ]
+      if (nrow(gate_point) == 0) next
+      gate_point = gate_point[which.max(gate_point$t.f), ]
 
       fountain_visits = trial_data[trial_data$comp %in% c("fountain_left", "fountain_right"), ]
       if (nrow(fountain_visits) == 0) next
-
       first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
 
-      total_distance = sum(sqrt(diff(trial_data$x.px)^2 + diff(trial_data$y.px)^2))
+      distance_cm = sqrt((first_fountain_visit$x.cm - gate_point$x.cm)^2 +
+                         (first_fountain_visit$y.cm - gate_point$y.cm)^2)
 
-      time_taken = (first_fountain_visit$t.f - capture_point$t.f)
+      time_taken_frames = first_fountain_visit$t.f - gate_point$t.f
+      time_taken_seconds = time_taken_frames / 10
 
-      if (time_taken == 0) next
+      if (time_taken_seconds == 0) next
 
-      average_speed = total_distance / time_taken
+      average_speed_cm_per_s = distance_cm / time_taken_seconds
 
       if (!is.null(trial_speeds_list[[as.character(trial)]])) {
-        trial_speeds_list[[as.character(trial)]] = c(trial_speeds_list[[as.character(trial)]], average_speed)
+        trial_speeds_list[[as.character(trial)]] = c(trial_speeds_list[[as.character(trial)]], average_speed_cm_per_s)
       } else {
-        trial_speeds_list[[as.character(trial)]] = c(average_speed)
+        trial_speeds_list[[as.character(trial)]] = c(average_speed_cm_per_s)
       }
     }
   }
@@ -233,6 +237,7 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
 
   return(results)
 }
+
 
 prepare_latency_data = function(latency_results) {
   latency_data = data.frame(
