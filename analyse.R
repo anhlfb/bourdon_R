@@ -1,459 +1,300 @@
 ### CLEAN THE DATA ###
 rm(list=ls())
-#print(list.files())
-data_path = "data/"
 
-fichiers = list.files(data_path, pattern="\\.csv$", full.names = TRUE)
-nbFichiers = length(fichiers)
+### Get the data trials < 16 ###
+get_top15_trials = function(data_path) {
+  fichiers = list.files(data_path, pattern = "\\.csv$", full.names = TRUE)
+  top15trials = c()
 
-top15trials = c()
-
-### First take files with trial < 16, then check files and count the colours, then do the maths ###
-for (k in 1:nbFichiers) {
-  donnees = read.csv(fichiers[k], header=TRUE, sep = ",", dec = ".", fill = TRUE, comment.char = "")
-  if (any(donnees$essai < 16)) {
-    top15trials = c(top15trials, fichiers[k])
-  }
-}
-rm(donnees)
-
-### Task 01 - Fraction of congruent gates: left-left and right-right###
-
-nbtop15 = length(top15trials)
-#print(nbtop15)
-left_left = 0
-right_right = 0
-not_the_case = 0
-yellow_ll = 0
-yellow_rr = 0
-blue_ll = 0
-blue_rr = 0
-other_one = 0
-nb_yellow = 0
-nb_blue = 0
-
-for (k in 1:nbtop15) {
-  data_top15 = read.csv(top15trials[k], header = TRUE)
-  fountain_visits = subset(data_top15, comp == "fountain_left" | comp == "fountain_right")
-
-  if (nrow(fountain_visits) == 0) {
-    next
+  for (file in fichiers) {
+    data = read.csv(file, header = TRUE, sep = ",", dec = ".", fill = TRUE)
+    if (any(data$essai < 16, na.rm = TRUE)) {
+      top15trials = c(top15trials, file)
+    }
   }
 
-  first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
-  cote_reinforce = unique(first_fountain_visit$cote.renforce)
-  color = unique(first_fountain_visit$coul.renforcee)
-  if (color == "yellow") {
-    nb_yellow = nb_yellow + 1
-  }
-  else if (color == "blue") {
-    nb_blue = nb_blue + 1
-  }
-  else {
-    print(NA)
-  }
-
-  ### Task 01 ###
-  if (cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") {
-    left_left = left_left + 1
-  }
-  else if (cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right") {
-    right_right = right_right + 1
-  }
-  else {
-    not_the_case = not_the_case + 1
-  }
-
-  ### Task 02 ###
-  if (cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left" & color == "yellow") {
-    yellow_ll = yellow_ll + 1
-  }
-  else if (cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left" & color == "blue") {
-    blue_ll = blue_ll + 1
-  }
-  else if (cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right" & color == "yellow") {
-    yellow_rr = yellow_rr + 1
-  }
-  else if (cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right" & color == "blue") {
-    blue_rr = blue_rr + 1
-  }
-  else {
-    other_one = other_one + 1
-  }
-
+  return(top15trials)
 }
 
-
-print(paste("01. Left-left: ", left_left, ", Right-right: ", right_right, ", Not the case: ", not_the_case))
-fraction_fountain_reinforce = (left_left + right_right) / nbtop15
-print(paste("02. Fraction of gate and fountain:", fraction_fountain_reinforce))
-
-vec_rep_01 = rep(x=1, times = left_left+right_right)
-vec_rep_02 = rep(x=0, times = not_the_case)
-vec_total = c(vec_rep_01, vec_rep_02)
-
-### Use function because we will calculate a lot of SEM ###
+### SEM ###
 calculate_sd_se = function(vector) {
   if (length(vector) <= 1) {
     return(list(sd = NA, se = NA))
   }
 
-  std = sd(vector)
-
+  std = sd(vector, na.rm = TRUE)
   std_error = std / sqrt(length(vector))
 
-  return(list(se = std_error))
+  return(se = std_error)
 }
 
-result_vec_total = calculate_sd_se(vec_total)
-print(paste("03. Standard error for first task", result_vec_total$se))
+### For Task 01 and 02
+count_congruent_gates_fountain = function(file_list) {
+  left_left = 0
+  right_right = 0
+  not_the_case = 0
+  yellow_ll = 0
+  yellow_rr = 0
+  blue_ll = 0
+  blue_rr = 0
+  other_one = 0
+  nb_yellow = 0
+  nb_blue = 0
 
-### Plot Stacked Graph ###
-fraction_fountain_reinforce = (left_left + right_right) / nbtop15
-not_congruent = 1 - fraction_fountain_reinforce
+  for (file in file_list) {
+    data = read.csv(file, header = TRUE)
 
-data_for_plot = data.frame(
-  Category = c("Same comp - same fountain", "Not Congruent"),
-  Fraction = c(fraction_fountain_reinforce, not_congruent)
-)
+    fountain_visits = subset(data, comp %in% c("fountain_left", "fountain_right"))
 
-ggplot(data_for_plot, aes(x = "", y = Fraction, fill = Category)) +
-  geom_bar(stat = "identity", width = 0.5) +
-  geom_text(aes(label = paste0(round(Fraction * 100, 1), "%")),
-            position = position_stack(vjust = 0.5)) +
-  labs(title = "Congruency Fraction of Reinforce side and fountains",
-       y = "Fraction",
-       x = "") +
-  scale_y_continuous(labels = scales::percent) +
-  theme_minimal() +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank())
+    if (nrow(fountain_visits) == 0) {
+      next
+    }
 
-### Bar graph ###
+    first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
 
-# Load ggplot2 for plotting
-library(ggplot2)
+    cote_reinforce = unique(first_fountain_visit$cote.renforce)
+    color = unique(first_fountain_visit$coul.renforcee)
 
-# Create a data frame for the bar plot with error bars
-data_for_plot <- data.frame(
-  Category = "Same reinforce gate - Same fountain side",
-  Fraction = fraction_fountain_reinforce,
-  SE = result_vec_total$se
-)
+    if (color == "yellow") {
+      nb_yellow = nb_yellow + 1
+    } else if (color == "blue") {
+      nb_blue = nb_blue + 1
+    }
 
-# Create the bar plot with error bars
-ggplot(data_for_plot, aes(x = Category, y = Fraction)) +
-  geom_bar(stat = "identity", fill = "skyblue", width = 0.5) +
-  geom_errorbar(aes(ymin = Fraction - SE, ymax = Fraction + SE),
-                width = 0.2, color = "black") +
-  geom_text(aes(label = paste0(round(Fraction * 100, 1), "%")),
-            vjust = -0.5) +
-  labs(title = "Fraction of congruency effect of reinforced gate and the fountain side with SEM",
-       y = "Fraction",
-       x = "") +
-  scale_y_continuous(labels = scales::percent) +
-  theme_minimal()
+    # Task 01 : ll & rr #
+    if (cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") {
+      left_left = left_left + 1
+    } else if (cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right") {
+      right_right = right_right + 1
+    } else {
+      not_the_case = not_the_case + 1
+    }
 
-### Task 02 ###
+    # Task 02 : yll - yrr - bll - brr #
+    if (cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left" & color == "yellow") {
+      yellow_ll = yellow_ll + 1
+    } else if (cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left" & color == "blue") {
+      blue_ll = blue_ll + 1
+    } else if (cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right" & color == "yellow") {
+      yellow_rr = yellow_rr + 1
+    } else if (cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right" & color == "blue") {
+      blue_rr = blue_rr + 1
+    } else {
+      other_one = other_one + 1
+    }
+  }
 
-print(paste("04. Y-L-L: ", yellow_ll, ", B-L-L: ", blue_ll, ", Y-R-R: ", yellow_rr, ", B-R-R: ", blue_rr))
-print(paste("05. Not the case: ", other_one))
-print(paste("06. Case with yellow", nb_yellow, ", Case with blue", nb_blue))
-fraction_yellow_fountain_reinforced = (yellow_ll + yellow_rr) / nb_yellow
-fraction_blue_fountain_reinforced = (blue_ll + blue_rr) / nb_blue
-print(paste("07. Fraction of color blue, gate and fountain:", fraction_blue_fountain_reinforced))
-print(paste("08. Fraction of color yellow, gate and fountain:", fraction_yellow_fountain_reinforced))
+  # Fraction Task 01 and Task 02 #
+  nbtop15 = length(file_list)
+  fraction_fountain_reinforce = (left_left + right_right) / nbtop15
+  fraction_yellow_fountain_reinforced = (yellow_ll + yellow_rr) / nb_yellow
+  fraction_blue_fountain_reinforced = (blue_ll + blue_rr) / nb_blue
 
-vec_yel01 = rep(x=1, times = yellow_ll+yellow_rr)
-vec_yel00 = rep(x=0, times = nb_yellow)
-vec_yel = c(vec_yel01, vec_yel00)
-vec_blu01 = rep(x=1, times = blue_ll+blue_rr)
-vec_blu00 = rep(x=0, times = nb_blue)
-vec_blu = c(vec_blu00, vec_blu01)
+  # SEM Calculation
+  vec_fountain_reinforce = c(rep(1, left_left + right_right), rep(0, not_the_case))
+  vec_yellow = c(rep(1, yellow_ll + yellow_rr), rep(0, nb_yellow - (yellow_ll + yellow_rr)))
+  vec_blue = c(rep(1, blue_ll + blue_rr), rep(0, nb_blue - (blue_ll + blue_rr)))
 
-result_vec_yel = calculate_sd_se(vec_yel)
-print(paste("09. Standard error for yellow vector is", result_vec_yel$se))
-result_vec_blu = calculate_sd_se(vec_blu)
-print(paste("10. Standard error for blue vector is", result_vec_blu$se))
+  sem_fountain_reinforce = calculate_sd_se(vec_fountain_reinforce)
+  sem_yellow = calculate_sd_se(vec_yellow)
+  sem_blue = calculate_sd_se(vec_blue)
 
-data_for_plot = data.frame(
-  Category = c("Yellow Gates", "Blue Gates"),
-  Fraction = c(fraction_yellow_fountain_reinforced, fraction_blue_fountain_reinforced),
-  SE = c(result_vec_yel$se, result_vec_blu$se)
-)
+  return(list(
+    fraction_fountain_reinforce = fraction_fountain_reinforce,
+    fraction_yellow_fountain_reinforced = fraction_yellow_fountain_reinforced,
+    fraction_blue_fountain_reinforced = fraction_blue_fountain_reinforced,
+    sem_fountain_reinforce = sem_fountain_reinforce,
+    sem_yellow = sem_yellow,
+    sem_blue = sem_blue
+  ))
+}
 
-ggplot(data_for_plot, aes(x = Category, y = Fraction)) +
-  geom_bar(stat = "identity", fill = c("yellow", "blue"), width = 0.5) +
-  geom_errorbar(aes(ymin = Fraction - SE, ymax = Fraction + SE),
-                width = 0.2, color = "black") +
-  geom_text(aes(label = paste0(round(Fraction * 100, 1), "%")),
-            vjust = -0.5) +
-  labs(title = "Fraction of Reinforced effect of colour and side on the fountain",
-       y = "Fraction",
-       x = "") +
-  scale_y_continuous(labels = scales::percent) +
-  theme_minimal()
+### Task 03 - 04 ###
+calculate_latency_with_conditions = function(file_list, trials = c(1, 5, 10, 15), condition = NULL) {
+  latency_1 = c()
+  latency_5 = c()
+  latency_10 = c()
+  latency_15 = c()
 
-#### Task 03 ###
-### We extract the data of the gate_test, take the time of gate_test that smaller
-### than the time of first fountain visit, then take the max value gate_test time
-### We calculate then the latency = fountain time - gate_test time for each trials
+  for (file in file_list) {
+    data = read.csv(file, header = TRUE)
 
-### If the code doesn't work - print the line 204 - 205 in the terminal/console
+    for (trial in trials) {
+      trial_data = subset(data, essai == trial)
 
-library(survival)
-library(survminer)
+      if (nrow(trial_data) == 0) next
 
-list_latency_1 = c()
-list_latency_5 = c()
-list_latency_10 = c()
-list_latency_15 = c()
+      relevant_data = subset(trial_data, comp %in% c("fountain_left", "fountain_right", "gate_test"))
 
-for (k in 1:nbtop15) {
-  data_top15 = read.csv(top15trials[k], header = TRUE)
+      if (nrow(relevant_data) == 0) next
 
-  for (trial in c(1, 5, 10, 15)) {
-    trial_data = subset(data_top15, essai == trial)
+      fountain_visits = subset(relevant_data, comp %in% c("fountain_left", "fountain_right"))
 
-    if (nrow(trial_data) > 0) {
-      fountain_times = trial_data$t.f[trial_data$comp %in% c('fountain_left', 'fountain_right')]
+      if (nrow(fountain_visits) == 0) next
 
-      if (length(fountain_times) > 0) {
-        first_fountain_time = min(fountain_times, na.rm = TRUE)
-        gate_times = trial_data$t.f[trial_data$comp == 'gate_test']
-        valid_gate_times = gate_times[gate_times < first_fountain_time]
+      first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
+      first_fountain_time = first_fountain_visit$t.f
+      cote_reinforce = unique(first_fountain_visit$cote.renforce)[1]
+      color = unique(first_fountain_visit$coul.renforcee)[1]
 
-        if (length(valid_gate_times) > 0) {
-          last_gate_test_time = max(valid_gate_times, na.rm = TRUE)
-          latency = first_fountain_time - last_gate_test_time
+      if (!is.null(condition)) {
+        valid_condition = (color == "yellow" & cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") |
+                          (color == "yellow" & cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right") |
+                          (color == "blue" & cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") |
+                          (color == "blue" & cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right")
 
-          if (latency > 0) {
-            if (trial == 1) {
-              list_latency_1 = c(list_latency_1, latency)
-            } else if (trial == 5) {
-              list_latency_5 = c(list_latency_5, latency)
-            } else if (trial == 10) {
-              list_latency_10 = c(list_latency_10, latency)
-            } else if (trial == 15) {
-              list_latency_15 = c(list_latency_15, latency)
-            }
-          }
+        if (!valid_condition) next
+      }
+
+      gate_test_times = relevant_data$t.f[relevant_data$comp == "gate_test" & relevant_data$t.f < first_fountain_time]
+
+      if (length(gate_test_times) == 0) next
+
+      last_gate_test_time = max(gate_test_times, na.rm = TRUE)
+
+      latency_fps = first_fountain_time - last_gate_test_time
+      latency = latency_fps / 10
+
+      if (latency > 0) {
+        if (trial == 1) {
+          latency_1 = c(latency_1, latency)
+        } else if (trial == 5) {
+          latency_5 = c(latency_5, latency)
+        } else if (trial == 10) {
+          latency_10 = c(latency_10, latency)
+        } else if (trial == 15) {
+          latency_15 = c(latency_15, latency)
         }
       }
     }
   }
+
+  average_latency_1 = mean(latency_1, na.rm = TRUE)
+  average_latency_5 = mean(latency_5, na.rm = TRUE)
+  average_latency_10 = mean(latency_10, na.rm = TRUE)
+  average_latency_15 = mean(latency_15, na.rm = TRUE)
+
+  return(list(
+    latency_1 = latency_1, average_latency_1 = average_latency_1,
+    latency_5 = latency_5, average_latency_5 = average_latency_5,
+    latency_10 = latency_10, average_latency_10 = average_latency_10,
+    latency_15 = latency_15, average_latency_15 = average_latency_15
+  ))
 }
 
-average_latency01 = mean(list_latency_1)
-average_latency05 = mean(list_latency_5)
-average_latency10 = mean(list_latency_10)
-average_latency15 = mean(list_latency_15)
+### Task 05 ###
+calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
+  trial_speeds_list = list()
 
-print(paste("11. Average latency in trial 01 is:", average_latency01))
-print(paste("12. Average latency in trial 05 is:", average_latency05))
-print(paste("13. Average latency in trial 10 is:", average_latency10))
-print(paste("14. Average latency in trial 15 is:", average_latency15))
+  for (file in file_list) {
+    data = read.csv(file, header = TRUE)
 
+    for (trial in trials) {
+      trial_data = subset(data, essai == trial)
 
+      if (nrow(trial_data) == 0) next
 
+      capture_point = trial_data[trial_data$comp == "capture", ]
+      if (nrow(capture_point) == 0) next
+      capture_point = capture_point[1, ]
 
-### Create the survival curve ###
-### 01. Create first the data frame with all the latency-trial lists
-### Here: https://biostatistique.vetagro-sup.fr/guideR_Cox.pdf
-### 02. Create Survival Object -> Compute the survival curve with fit Kaplan - No idea =))
+      fountain_visits = trial_data[trial_data$comp %in% c("fountain_left", "fountain_right"), ]
+      if (nrow(fountain_visits) == 0) next
 
+      first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
 
-latency_data = data.frame(
-  Latency = c(list_latency_1, list_latency_5, list_latency_10, list_latency_15),
-  Trial = factor(c(rep(1, length(list_latency_1)),
-                   rep(5, length(list_latency_5)),
-                   rep(10, length(list_latency_10)),
-                   rep(15, length(list_latency_15))))
-)
+      total_distance = sum(sqrt(diff(trial_data$x.px)^2 + diff(trial_data$y.px)^2))
 
-#print(latency_data)
+      time_taken = (first_fountain_visit$t.f - capture_point$t.f)
 
-surv_obj = Surv(time = latency_data$Latency)
+      if (time_taken == 0) next
 
-fit = survfit(Surv(Latency) ~ Trial, data = latency_data)
+      average_speed = total_distance / time_taken
 
-### 03. Print the table to check the time each bee reach the zone ###
-#print(summary(fit))
-
-### 04. Plot plot plot ###
-plot(fit,
-     col = c("blue", "red", "green", "purple"),
-     lwd = 2,
-     lty = 1:4,
-     main = "Survival curve for Bee Latency",
-     xlab = "Time reached Fountain (seconds)",
-     ylab = "Proportion of Bees Not Reaching Fountain")
-
-  legend("topright",
-       legend = c("Trial 1", "Trial 5", "Trial 10", "Trial 15"),
-       col = c("blue", "red", "green", "purple"),
-       lwd = 2,
-       lty = 1:4)
-
-
-### Task 04
-### We extract the data of the gate_test, take the time of gate_test that smaller
-### than the time of first fountain visit, then take the max value gate_test time
-### We calculate then the latency = fountain time - gate_test time for each trials
-### Then we add the latency in the group only if they are congruent (yll - yrr - bll - brr)
-### Task 04 - Extract specific conditions and calculate latency for each trial ###
-
-latency_reinforced_1 = c()
-latency_reinforced_5 = c()
-latency_reinforced_10 = c()
-latency_reinforced_15 = c()
-
-for (k in 1:nbtop15) {
-  data_top15 = read.csv(top15trials[k], header = TRUE)
-  for (trial in c(1, 5, 10, 15)) {
-    trial_data = subset(data_top15, essai == trial)
-
-    if (nrow(trial_data) == 0) next
-
-    relevant_data = subset(trial_data, comp %in% c("fountain_left", "fountain_right", "gate_test"))
-
-    if (nrow(relevant_data) == 0) next
-
-    fountain_visits = subset(relevant_data, comp %in% c("fountain_left", "fountain_right"))
-
-    if (nrow(fountain_visits) == 0) next
-
-    first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
-    first_fountain_time = first_fountain_visit$t.f
-    cote_reinforce = unique(first_fountain_visit$cote.renforce)[1]
-    color = unique(first_fountain_visit$coul.renforcee)[1]
-
-    valid_condition = (color == "yellow" & cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") |
-                      (color == "yellow" & cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right") |
-                      (color == "blue" & cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") |
-                      (color == "blue" & cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right")
-
-    if (!valid_condition) next
-
-    gate_test_times = relevant_data$t.f[relevant_data$comp == "gate_test" & relevant_data$t.f < first_fountain_time]
-
-    if (length(gate_test_times) == 0) next
-
-    last_gate_test_time = max(gate_test_times, na.rm = TRUE)
-
-    latency = first_fountain_time - last_gate_test_time
-
-    if (latency > 0) {
-      if (trial == 1) {
-        latency_reinforced_1 = c(latency_reinforced_1, latency)
-      } else if (trial == 5) {
-        latency_reinforced_5 = c(latency_reinforced_5, latency)
-      } else if (trial == 10) {
-        latency_reinforced_10 = c(latency_reinforced_10, latency)
-      } else if (trial == 15) {
-        latency_reinforced_15 = c(latency_reinforced_15, latency)
+      if (!is.null(trial_speeds_list[[as.character(trial)]])) {
+        trial_speeds_list[[as.character(trial)]] = c(trial_speeds_list[[as.character(trial)]], average_speed)
+      } else {
+        trial_speeds_list[[as.character(trial)]] = c(average_speed)
       }
     }
   }
-}
 
-
-average_latency_1 = mean(latency_reinforced_1, na.rm = TRUE)
-average_latency_5 = mean(latency_reinforced_5, na.rm = TRUE)
-average_latency_10 = mean(latency_reinforced_10, na.rm = TRUE)
-average_latency_15 = mean(latency_reinforced_15, na.rm = TRUE)
-
-print(paste("15. Average latency in trial 1 is:", average_latency_1))
-print(paste("16. Average latency in trial 5 is:", average_latency_5))
-print(paste("17. Average latency in trial 10 is:", average_latency_10))
-print(paste("18. Average latency in trial 15 is:", average_latency_15))
-
-latency_yellow = c(
-  latency_reinforced_1[data_top15$coul.renforcee == "yellow" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
-  latency_reinforced_5[data_top15$coul.renforcee == "yellow" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
-  latency_reinforced_10[data_top15$coul.renforcee == "yellow" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
-  latency_reinforced_15[data_top15$coul.renforcee == "yellow" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")]
-)
-
-latency_blue = c(
-  latency_reinforced_1[data_top15$coul.renforcee == "blue" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
-  latency_reinforced_5[data_top15$coul.renforcee == "blue" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
-  latency_reinforced_10[data_top15$coul.renforcee == "blue" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")],
-  latency_reinforced_15[data_top15$coul.renforcee == "blue" & (data_top15$cote.renforce == "left" | data_top15$cote.renforce == "right")]
-)
-
-latency_data_colors = data.frame(
-  Latency = c(latency_yellow, latency_blue),
-  Color = factor(c(rep("Yellow", length(latency_yellow)),
-                   rep("Blue", length(latency_blue))))
-)
-
-surv_obj_colors = Surv(time = latency_data_colors$Latency)
-
-fit_colors = survfit(Surv(Latency) ~ Color, data = latency_data_colors)
-#print(summary(fit))
-
-### Task 05
-### Testing with the function
-### We calculate the total distance traveled using x and y
-### Then we divide the total distance by the time taken from capture to the first fountain visit.
-
-calculate_average_speed = function(data, trials) {
-  speed_results = list()
-
+  results = list()
   for (trial in trials) {
-    trial_data = subset(data, essai == trial)
-
-    if (nrow(trial_data) == 0) next
-
-    capture_point = trial_data[trial_data$comp == "capture", ]
-    if (nrow(capture_point) == 0) next
-    capture_point <- capture_point[1, ]
-
-    fountain_visits = trial_data[trial_data$comp %in% c("fountain_left", "fountain_right"), ]
-    if (nrow(fountain_visits) == 0) next
-
-    first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
-
-    total_distance = sum(sqrt(diff(trial_data$x.px)^2 + diff(trial_data$y.px)^2))
-
-    time_taken = first_fountain_visit$t.f - capture_point$t.f
-    if (time_taken == 0) next
-
-    average_speed = total_distance / time_taken
-
-    speed_results[[as.character(trial)]] = average_speed
+    speeds = trial_speeds_list[[as.character(trial)]]
+    if (length(speeds) > 1) {
+      mean_speed = mean(speeds, na.rm = TRUE)
+      se_speed = sd(speeds, na.rm = TRUE) / sqrt(length(speeds))
+      results[[as.character(trial)]] = list(mean = mean_speed, se = se_speed)
+    } else {
+      results[[as.character(trial)]] = list(mean = NA, se = NA)
+    }
   }
 
-  return(speed_results)
+  return(results)
 }
 
-all_speed_results = list()
-for (k in 1:nbtop15) {
-  data_top15 = read.csv(top15trials[k], header = TRUE)
-  speed_results = calculate_average_speed(data_top15, c(1, 5, 10, 15))
-
-  all_speed_results[[k]] = speed_results
+prepare_latency_data = function(latency_results) {
+  latency_data = data.frame(
+    Latency = c(latency_results$latency_1, latency_results$latency_5, latency_results$latency_10, latency_results$latency_15),
+    Trial = factor(c(rep(1, length(latency_results$latency_1)),
+                     rep(5, length(latency_results$latency_5)),
+                     rep(10, length(latency_results$latency_10)),
+                     rep(15, length(latency_results$latency_15))))
+  )
+  return(latency_data)
 }
 
-calculate_mean_se = function(speed_list, trial) {
-  speeds = unlist(lapply(speed_list, function(x) if (!is.null(x[[as.character(trial)]])) x[[as.character(trial)]] else NA))
-  speeds = speeds[!is.na(speeds)]
+plot_survival_curve = function(latency_data) {
+  library(survival)
+  library(survminer)
 
-  mean_speed = mean(speeds)
-  se_speed = sd(speeds) / sqrt(length(speeds))
+  surv_obj = Surv(time = latency_data$Latency, event = rep(1, nrow(latency_data)))
+  fit = survfit(surv_obj ~ Trial, data = latency_data)
 
-  return(list(mean = mean_speed, se = se_speed))
+  plot(fit,
+       col = c("blue", "red", "green", "purple"),
+       lwd = 2,
+       lty = 1:4,
+       main = "Survival Analysis for Bee Latency",
+       xlab = "Time to Fountain (seconds)",
+       ylab = "Proportion of Bees Not Reaching Fountain")
+
+    legend("topright",
+         legend = c("Trial 1", "Trial 5", "Trial 10", "Trial 15"),
+         col = c("blue", "red", "green", "purple"),
+         lwd = 2,
+         lty = 1:4) }
+
+### MAIN ###
+data_path = "data/"
+top15_trials = get_top15_trials(data_path)
+
+### Task 01 and 02 ###
+results = count_congruent_gates_fountain(top15_trials)
+print(paste("01. Fraction of gate and fountain congruency:", results$fraction_fountain_reinforce, "with SEM ", results$sem_fountain_reinforce))
+print(paste("02. Fraction of yellow gates:", results$fraction_yellow_fountain_reinforced, "With SEM ", results$sem_yellow))
+print(paste("03. Fraction of blue gates:", results$fraction_blue_fountain_reinforced, "With SEM", results$sem_blue))
+
+### Task 03 ###
+latency_results_task03 = calculate_latency_with_conditions(top15_trials, condition = NULL)
+print(paste("04. Average latency for trial 1:", latency_results_task03$average_latency_1))
+print(paste("05. Average latency for trial 5:", latency_results_task03$average_latency_5))
+print(paste("06. Average latency for trial 10:", latency_results_task03$average_latency_10))
+print(paste("07. Average latency for trial 15:", latency_results_task03$average_latency_15))
+latency_data = prepare_latency_data(latency_results_task03)
+plot_survival_curve(latency_data)
+
+### Task 04 ###
+latency_results_task04 = calculate_latency_with_conditions(top15_trials, condition = TRUE)
+print(paste("08. Average latency for trial 1:", latency_results_task04$average_latency_1))
+print(paste("09. Average latency for trial 5:", latency_results_task04$average_latency_5))
+print(paste("10. Average latency for trial 10:", latency_results_task04$average_latency_10))
+print(paste("11. Average latency for trial 15:", latency_results_task04$average_latency_15))
+
+### Task 05 ###
+speed_results = calculate_average_speed(top15_trials)
+for (trial in c(1, 5, 10, 15)) {
+  trial_result = speed_results[[as.character(trial)]]
+  print(paste("Average speed in trial", trial, ":", trial_result$mean, "±", trial_result$se))
 }
-
-mean_speed_1 = calculate_mean_se(all_speed_results, 1)
-mean_speed_5 = calculate_mean_se(all_speed_results, 5)
-mean_speed_10 = calculate_mean_se(all_speed_results, 10)
-mean_speed_15 = calculate_mean_se(all_speed_results, 15)
-
-print(paste("Average speed in trial 1:", mean_speed_1$mean, "±", mean_speed_1$se))
-print(paste("Average speed in trial 5:", mean_speed_5$mean, "±", mean_speed_5$se))
-print(paste("Average speed in trial 10:", mean_speed_10$mean, "±", mean_speed_10$se))
-print(paste("Average speed in trial 15:", mean_speed_15$mean, "±", mean_speed_15$se))
-
-### Use function, it would make the code clearer
