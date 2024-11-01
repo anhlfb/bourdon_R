@@ -52,14 +52,12 @@ Les fichiers de données sont nommés comme suit : `frame_date_bee_xy_trial=z_ta
 - **Objectif :** Calculer la **latence moyenne** entre la sortie du compartiment `gate_test` et la première arrivée à une zone de nourriture (`fountain_left` ou `fountain_right`).
 - **Visualisation :** Une **courbe de survie** pour comparer les essais **1, 5, 10 et 15**.
 
-### 4. Courbe de Survie Comparative (Couleur Renforcée vs Non Renforcée)
+### 4. Latence Apprentissage Réussi vs. Échoué
 
-- **Objectif :** Calculer la **latence moyenne** entre le dernier moment où le bourdon se trouve dans le `gate_test` et sa première visite à la fontaine, en prenant en compte la congruence entre le côté de la fontaine et le côté et couleur renforcés.
-- **Visualisation :** Deux **courbes de survie** pour chaque couleur, afin de comparer les essais **1, 5, 10 et 15**.
+- **Objectif :** Calculer la latence moyenne entre le dernier passage du bourdon dans le `gate_test` et sa première visite à la fontaine. Comparer les latences de deux groupes : **apprentissage réussi** (choix du même côté, par ex. gauche-gauche) et **apprentissage échoué** (côtés différents).
+- **Visualisation :** Deux **courbes de survie** par couleur, comparant les essais **1, 5, 10 et 15**.
 
 ### 5. Vitesse Moyenne pour Atteindre la Zone de Nourriture
 
 - **Objectif :** Calculer la **vitesse moyenne ± SE** entre le `gate_test` et la première arrivée à une (`fountain_left` ou `fountain_right`), et comparer cette vitesse à travers les essais **1, 5, 10 et 15**.
-- **Visualisation :** Un graphique.
-
 ---
