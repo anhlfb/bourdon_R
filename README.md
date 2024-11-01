@@ -2,7 +2,7 @@
 
 ### Encoding: UTF-8
 
-Cette analyse porte sur le groupe témoin de bourdons de l’espèce **Bombus terrestris**. Nous examinons 187 trajectoires de bourdons recueillies dans un dispositif d'apprentissage automatisé en Y-maze. Cette étude s'inscrit dans une recherche plus large sur l'impact des stress environnementaux sur les capacités d'apprentissage des bourdons. Ici, nous analysons les essais 1 à 15 afin d'observer l'évolution des comportements d'apprentissage au fil du temps, en prenant en compte des facteurs environnementaux tels que le renforcement du côté, la couleur de la lumière et le côté de la fontaine.
+Cette analyse se focalise sur le groupe de contrôle des bourdons **Bombus terrestris**, dans le cadre d'une étude plus large sur l'impact des facteurs de stress environnementaux sur le comportement d'apprentissage des bourdons. Nous examinons 187 trajectoires de bourdons dans un dispositif d'apprentissage automatisé de type Y-maze. Nous analysons les essais 1 à 15 pour observer l'évolution des comportements d'apprentissage, en tenant compte de facteurs tels que le côté renforcé, la couleur de la lumière et le côté de la fontaine.
 
 
 ## Description des données
