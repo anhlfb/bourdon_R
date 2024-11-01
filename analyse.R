@@ -110,77 +110,107 @@ count_congruent_gates_fountain = function(file_list) {
 }
 
 ### Task 03 - 04 ###
-calculate_latency_with_conditions = function(file_list, trials = c(1, 5, 10, 15), condition = NULL) {
+calculate_latency = function(file_list, trials = c(1, 5, 10, 15), condition = NULL) {
+  ### For task 03
   latency_1 = c()
   latency_5 = c()
   latency_10 = c()
   latency_15 = c()
+
+  ### For task 04
+  congruent_latency = list(trial_1 = c(), trial_5 = c(), trial_10 = c(), trial_15 = c())
+  incongruent_latency = list(trial_1 = c(), trial_5 = c(), trial_10 = c(), trial_15 = c())
 
   for (file in file_list) {
     data = read.csv(file, header = TRUE)
 
     for (trial in trials) {
       trial_data = subset(data, essai == trial)
-
       if (nrow(trial_data) == 0) next
 
       relevant_data = subset(trial_data, comp %in% c("fountain_left", "fountain_right", "gate_test"))
-
       if (nrow(relevant_data) == 0) next
 
       fountain_visits = subset(relevant_data, comp %in% c("fountain_left", "fountain_right"))
-
       if (nrow(fountain_visits) == 0) next
 
       first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
       first_fountain_time = first_fountain_visit$t.f
       cote_reinforce = unique(first_fountain_visit$cote.renforce)[1]
-      color = unique(first_fountain_visit$coul.renforcee)[1]
+      fountain_side = first_fountain_visit$comp
 
-      if (!is.null(condition)) {
-        valid_condition = (color == "yellow" & cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") |
-                          (color == "yellow" & cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right") |
-                          (color == "blue" & cote_reinforce == "left" & first_fountain_visit$comp == "fountain_left") |
-                          (color == "blue" & cote_reinforce == "right" & first_fountain_visit$comp == "fountain_right")
-
-        if (!valid_condition) next
-      }
+      is_congruent = (cote_reinforce == "left" & fountain_side == "fountain_left") |
+                     (cote_reinforce == "right" & fountain_side == "fountain_right")
 
       gate_test_times = relevant_data$t.f[relevant_data$comp == "gate_test" & relevant_data$t.f < first_fountain_time]
-
       if (length(gate_test_times) == 0) next
-
       last_gate_test_time = max(gate_test_times, na.rm = TRUE)
 
       latency_fps = first_fountain_time - last_gate_test_time
-      latency = latency_fps / 10
+      latency_seconds = latency_fps / 10  # Convert to seconds
 
-      if (latency > 0) {
-        if (trial == 1) {
-          latency_1 = c(latency_1, latency)
-        } else if (trial == 5) {
-          latency_5 = c(latency_5, latency)
-        } else if (trial == 10) {
-          latency_10 = c(latency_10, latency)
-        } else if (trial == 15) {
-          latency_15 = c(latency_15, latency)
+      if (latency_seconds > 0) {
+        if (is.null(condition)) {
+          if (trial == 1) {
+            latency_1 = c(latency_1, latency_seconds)
+          } else if (trial == 5) {
+            latency_5 = c(latency_5, latency_seconds)
+          } else if (trial == 10) {
+            latency_10 = c(latency_10, latency_seconds)
+          } else if (trial == 15) {
+            latency_15 = c(latency_15, latency_seconds)
+          }
+        } else {
+          if (is_congruent) {
+            if (trial == 1) {
+              congruent_latency$trial_1 = c(congruent_latency$trial_1, latency_seconds)
+            } else if (trial == 5) {
+              congruent_latency$trial_5 = c(congruent_latency$trial_5, latency_seconds)
+            } else if (trial == 10) {
+              congruent_latency$trial_10 = c(congruent_latency$trial_10, latency_seconds)
+            } else if (trial == 15) {
+              congruent_latency$trial_15 = c(congruent_latency$trial_15, latency_seconds)
+            }
+          } else {
+            if (trial == 1) {
+              incongruent_latency$trial_1 = c(incongruent_latency$trial_1, latency_seconds)
+            } else if (trial == 5) {
+              incongruent_latency$trial_5 = c(incongruent_latency$trial_5, latency_seconds)
+            } else if (trial == 10) {
+              incongruent_latency$trial_10 = c(incongruent_latency$trial_10, latency_seconds)
+            } else if (trial == 15) {
+              incongruent_latency$trial_15 = c(incongruent_latency$trial_15, latency_seconds)
+            }
+          }
         }
       }
     }
   }
 
-  average_latency_1 = mean(latency_1, na.rm = TRUE)
-  average_latency_5 = mean(latency_5, na.rm = TRUE)
-  average_latency_10 = mean(latency_10, na.rm = TRUE)
-  average_latency_15 = mean(latency_15, na.rm = TRUE)
+  if (is.null(condition)) {
+    average_latency_1 = mean(latency_1, na.rm = TRUE)
+    average_latency_5 = mean(latency_5, na.rm = TRUE)
+    average_latency_10 = mean(latency_10, na.rm = TRUE)
+    average_latency_15 = mean(latency_15, na.rm = TRUE)
 
-  return(list(
-    latency_1 = latency_1, average_latency_1 = average_latency_1,
-    latency_5 = latency_5, average_latency_5 = average_latency_5,
-    latency_10 = latency_10, average_latency_10 = average_latency_10,
-    latency_15 = latency_15, average_latency_15 = average_latency_15
-  ))
+    return(list(
+      latency_1 = latency_1, average_latency_1 = average_latency_1,
+      latency_5 = latency_5, average_latency_5 = average_latency_5,
+      latency_10 = latency_10, average_latency_10 = average_latency_10,
+      latency_15 = latency_15, average_latency_15 = average_latency_15
+    ))
+  } else {
+    congruent_avg = sapply(congruent_latency, function(x) mean(x, na.rm = TRUE))
+    incongruent_avg = sapply(incongruent_latency, function(x) mean(x, na.rm = TRUE))
+
+    return(list(
+      congruent = congruent_avg,
+      incongruent = incongruent_avg
+    ))
+  }
 }
+
+
 
 ### Task 05 ###
 calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
@@ -239,6 +269,10 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
 }
 
 
+### PLOTS
+
+
+### Plot survival curves
 prepare_latency_data = function(latency_results) {
   latency_data = data.frame(
     Latency = c(latency_results$latency_1, latency_results$latency_5, latency_results$latency_10, latency_results$latency_15),
@@ -281,21 +315,24 @@ print(paste("01. Fraction of gate and fountain congruency:", results$fraction_fo
 print(paste("02. Fraction of yellow gates:", results$fraction_yellow_fountain_reinforced, "With SEM ", results$sem_yellow))
 print(paste("03. Fraction of blue gates:", results$fraction_blue_fountain_reinforced, "With SEM", results$sem_blue))
 
-### Task 03 ###
-latency_results_task03 = calculate_latency_with_conditions(top15_trials, condition = NULL)
+# For Task 03
+latency_results_task03 = calculate_latency(top15_trials, condition = NULL)
 print(paste("04. Average latency for trial 1:", latency_results_task03$average_latency_1))
 print(paste("05. Average latency for trial 5:", latency_results_task03$average_latency_5))
 print(paste("06. Average latency for trial 10:", latency_results_task03$average_latency_10))
 print(paste("07. Average latency for trial 15:", latency_results_task03$average_latency_15))
-latency_data = prepare_latency_data(latency_results_task03)
-plot_survival_curve(latency_data)
 
-### Task 04 ###
-latency_results_task04 = calculate_latency_with_conditions(top15_trials, condition = TRUE)
-print(paste("08. Average latency for trial 1:", latency_results_task04$average_latency_1))
-print(paste("09. Average latency for trial 5:", latency_results_task04$average_latency_5))
-print(paste("10. Average latency for trial 10:", latency_results_task04$average_latency_10))
-print(paste("11. Average latency for trial 15:", latency_results_task04$average_latency_15))
+# For Task 04
+latency_results_task04 = calculate_latency(top15_trials, condition = TRUE)
+print(paste("08. Average latency for trial 1 (congruent):", latency_results_task04$congruent["trial_1"]))
+print(paste("09. Average latency for trial 5 (congruent):", latency_results_task04$congruent["trial_5"]))
+print(paste("10. Average latency for trial 10 (congruent):", latency_results_task04$congruent["trial_10"]))
+print(paste("11. Average latency for trial 15 (congruent):", latency_results_task04$congruent["trial_15"]))
+
+print(paste("12. Average latency for trial 1 (incongruent):", latency_results_task04$incongruent["trial_1"]))
+print(paste("13. Average latency for trial 5 (incongruent):", latency_results_task04$incongruent["trial_5"]))
+print(paste("14. Average latency for trial 10 (incongruent):", latency_results_task04$incongruent["trial_10"]))
+print(paste("15. Average latency for trial 15 (incongruent):", latency_results_task04$incongruent["trial_15"]))
 
 ### Task 05 ###
 speed_results = calculate_average_speed(top15_trials)
