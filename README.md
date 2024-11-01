@@ -1,11 +1,11 @@
-# Project 11 - Apprentissage avec les bourdons
+# Project 11 - Apprentissage avec des bourdons
 
 ### Encoding: UTF-8
 
-Cette analyse porte sur le groupe témoin de bourdons de l’espèce **Bombus terrestris**. Nous examinons 187 trajectoires de bourdons recueillies dans un dispositif d'apprentissage automatisé en Y-maze. Cette étude s'inscrit dans une recherche plus large sur l'impact des stress environnementaux sur les capacités d'apprentissage des bourdons. Ici, nous analysons les essais 1 à 15 afin d'observer l'évolution des comportements d'apprentissage au fil du temps, en prenant en compte des facteurs tels que le renforcement latéral, la couleur de la lumière et le côté de la fontaine.
+Cette analyse porte sur le groupe témoin de bourdons de l’espèce **Bombus terrestris**. Nous examinons 187 trajectoires de bourdons recueillies dans un dispositif d'apprentissage automatisé en Y-maze. Cette étude s'inscrit dans une recherche plus large sur l'impact des stress environnementaux sur les capacités d'apprentissage des bourdons. Ici, nous analysons les essais 1 à 15 afin d'observer l'évolution des comportements d'apprentissage au fil du temps, en prenant en compte des facteurs environnementaux tels que le renforcement du côté, la couleur de la lumière et le côté de la fontaine.
 
 
-## Description des Données
+## Description des données
 
 Chaque fichier de données contient 8 colonnes :
 
@@ -20,11 +20,11 @@ Chaque fichier de données contient 8 colonnes :
 | `id.bourdon`      | Identifiant unique pour chaque bourdon                                   |
 | `essai`           | Numéro d'essai du bourdon (varie entre **1** et **31**)                  |
 
-- **Échelle :** 1 cm correspond à 75 pixels dans les données.
+- **Échelle :** 1 cm correspond à 75 pixels.
 - **Variation des Essais :** Le nombre d'essais par bourdon peut varier de **1 à 31**.
-- **Important :** Certains bourdons n'ont jamais atteint la zone de nourriture. Ces bourdons doivent être **exclus** des analyses statistiques finales.
+- **Important :** Certains bourdons n'ont jamais atteint la zone de nourriture. Nous les **excluons** dans des analyses statistiques finales.
 
-### Format de Nom des Fichiers
+### Format de nom des fichiers
 
 Les fichiers de données sont nommés comme suit : `frame_date_bee_xy_trial=z_tab.csv`
 
@@ -35,14 +35,14 @@ Les fichiers de données sont nommés comme suit : `frame_date_bee_xy_trial=z_ta
 | `z`           | Numéro de l'essai                                    |
 
 ---
-## Calculs à Effectuer
+## Calculs à effectuer
 
-### 1. Fraction des Choix pour le Côté et la Fontaine Renforcés
+### 1. Fraction des choix pour le côté renforcé et la fontaine
 
 - **Objectif :** Mesurer la fréquence à laquelle les bourdons choisissent la fontaine du même côté que la sortie renforcée (gauche-gauche ou droite-droite) sur les essais **1 à 15**. Inclure l’**erreur standard (± SE)** pour plus de précision.
 - **Visualisation :** Un **diagramme en barres** comparant la fraction totale des choix congruents et non congruents, pour montrer les différences dans le renforcement.
 
-### 2. Analyse par Couleur (Jaune / Bleu)
+### 2. Fraction des choix pour le côté avec la couleur renforcée et la fontaine
 
 - **Objectif :** Réaliser la même analyse de fraction ± SE que ci-dessus, en ajoutant les couleurs renforcées **jaune** (y) et **bleu** (b) avec les côtés renforcés **gauche** et **droite**. Il y a quatre groupes : yll, yrr, bll, brr.
 - **Visualisation :** Un **graphique comparatif** montrant les fractions pour les cas congruents et non congruents.
@@ -63,6 +63,3 @@ Les fichiers de données sont nommés comme suit : `frame_date_bee_xy_trial=z_ta
 - **Visualisation :** Un graphique.
 
 ---
-
-## Notes
-- **Exclure** les bourdons qui n'ont pas atteint la zone de nourriture des analyses statistiques finales.
