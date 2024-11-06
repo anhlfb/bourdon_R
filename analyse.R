@@ -271,8 +271,7 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
 
 ### PLOTS
 
-
-### Plot survival curves
+### Task 03 - 04: Plot survival curves
 prepare_latency_data = function(latency_results) {
   latency_data = data.frame(
     Latency = c(latency_results$latency_1, latency_results$latency_5, latency_results$latency_10, latency_results$latency_15),
@@ -295,15 +294,16 @@ plot_survival_curve = function(latency_data) {
        col = c("blue", "red", "green", "purple"),
        lwd = 2,
        lty = 1:4,
-       main = "Survival Analysis for Bee Latency",
+       main = "Survival Analysis for Bumblebee Latency",
        xlab = "Time to Fountain (seconds)",
-       ylab = "Proportion of Bees Not Reaching Fountain")
+       ylab = "Proportion of Bumblebee Not Reaching Fountain")
 
     legend("topright",
          legend = c("Trial 1", "Trial 5", "Trial 10", "Trial 15"),
          col = c("blue", "red", "green", "purple"),
          lwd = 2,
-         lty = 1:4) }
+         lty = 1:4)
+}
 
 ### MAIN ###
 data_path = "data/"
@@ -315,12 +315,59 @@ print(paste("01. Fraction of gate and fountain congruency:", results$fraction_fo
 print(paste("02. Fraction of yellow gates:", results$fraction_yellow_fountain_reinforced, "With SEM ", results$sem_yellow))
 print(paste("03. Fraction of blue gates:", results$fraction_blue_fountain_reinforced, "With SEM", results$sem_blue))
 
+library(ggplot2)
+
+data_for_plot = data.frame(
+  Category = c("Learned", "Did Not Learn"),
+  Fraction = c(results$fraction_fountain_reinforce, 1 - results$fraction_fountain_reinforce),
+  SE = c(results$sem_fountain_reinforce, results$sem_fountain_reinforce)  # Same SEM for both groups
+)
+
+ggplot(data_for_plot, aes(x = Category, y = Fraction, fill = Category)) +
+  geom_bar(stat = "identity", width = 0.5) +
+  geom_errorbar(aes(ymin = Fraction - SE, ymax = Fraction + SE),
+                width = 0.2, color = "black") +
+  geom_text(aes(label = paste0(round(Fraction * 100, 1), "%")),
+            vjust = -0.5) +
+  labs(title = "Congruency Effect: Reinforced Gate and Fountain Side",
+       y = "Fraction",
+       x = "") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal()
+
+data_for_plot = data.frame(
+  Color = rep(c("Yellow", "Blue"), each = 2),
+  Category = rep(c("Learned", "Did Not Learn"), 2),
+  Fraction = c(results$fraction_yellow_fountain_reinforced,
+               1 - results$fraction_yellow_fountain_reinforced,
+               results$fraction_blue_fountain_reinforced,
+               1 - results$fraction_blue_fountain_reinforced),
+  SE = c(results$sem_yellow, results$sem_yellow, results$sem_blue, results$sem_blue)  # Use corresponding SEM for each color
+)
+
+
+ggplot(data_for_plot, aes(x = Color, y = Fraction, fill = Category)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.6) +
+  geom_errorbar(aes(ymin = Fraction - SE, ymax = Fraction + SE),
+                width = 0.2, color = "black", position = position_dodge(width = 0.8)) +
+  geom_text(aes(label = paste0(round(Fraction * 100, 1), "%")),
+            vjust = -0.5, position = position_dodge(width = 0.8)) +
+  labs(title = "Congruency Effect by Color (Yellow & Blue) with SEM",
+       y = "Fraction",
+       x = "Color") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal()
+
+
 # For Task 03
 latency_results_task03 = calculate_latency(top15_trials, condition = NULL)
 print(paste("04. Average latency for trial 1:", latency_results_task03$average_latency_1))
 print(paste("05. Average latency for trial 5:", latency_results_task03$average_latency_5))
 print(paste("06. Average latency for trial 10:", latency_results_task03$average_latency_10))
 print(paste("07. Average latency for trial 15:", latency_results_task03$average_latency_15))
+test = prepare_latency_data(latency_results_task03)
+plot_survival_curve(test)
+
 
 # For Task 04
 latency_results_task04 = calculate_latency(top15_trials, condition = TRUE)
