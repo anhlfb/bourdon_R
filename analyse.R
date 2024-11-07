@@ -129,10 +129,10 @@ calculate_latency = function(file_list, trials = c(1, 5, 10, 15), condition = NU
       if (nrow(trial_data) == 0) next
 
       relevant_data = subset(trial_data, comp %in% c("fountain_left", "fountain_right", "gate_test"))
-      if (nrow(relevant_data) == 0) next
+      #if (nrow(relevant_data) == 0) next
 
       fountain_visits = subset(relevant_data, comp %in% c("fountain_left", "fountain_right"))
-      if (nrow(fountain_visits) == 0) next
+      #if (nrow(fountain_visits) == 0) next
 
       first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
       first_fountain_time = first_fountain_visit$t.f
@@ -205,7 +205,8 @@ calculate_latency = function(file_list, trials = c(1, 5, 10, 15), condition = NU
 
     return(list(
       congruent = congruent_avg,
-      incongruent = incongruent_avg
+      incongruent = incongruent_avg,
+      congruent_latencies = congruent_latency
     ))
   }
 }
@@ -225,14 +226,14 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
     for (trial in trials) {
       trial_data = subset(data, essai == trial)
 
-      if (nrow(trial_data) == 0) next
+      #if (nrow(trial_data) == 0) next
 
       gate_point = trial_data[trial_data$comp == "gate_test", ]
-      if (nrow(gate_point) == 0) next
+      #if (nrow(gate_point) == 0) next
       gate_point = gate_point[which.max(gate_point$t.f), ]
 
       fountain_visits = trial_data[trial_data$comp %in% c("fountain_left", "fountain_right"), ]
-      if (nrow(fountain_visits) == 0) next
+      #if (nrow(fountain_visits) == 0) next
       first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
 
       distance_cm = sqrt((first_fountain_visit$x.cm - gate_point$x.cm)^2 +
@@ -241,7 +242,7 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
       time_taken_frames = first_fountain_visit$t.f - gate_point$t.f
       time_taken_seconds = time_taken_frames / 10
 
-      if (time_taken_seconds == 0) next
+      #if (time_taken_seconds == 0) next
 
       average_speed_cm_per_s = distance_cm / time_taken_seconds
 
@@ -271,7 +272,7 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
 
 ### PLOTS
 
-### Task 03 - 04: Plot survival curves
+### Task 03: Plot survival curves
 prepare_latency_data = function(latency_results) {
   latency_data = data.frame(
     Latency = c(latency_results$latency_1, latency_results$latency_5, latency_results$latency_10, latency_results$latency_15),
@@ -305,20 +306,55 @@ plot_survival_curve = function(latency_data) {
          lty = 1:4)
 }
 
+###Plot 04:
+prepare_congruent_data = function(latency_results) {
+  latency_data = data.frame(
+    Latency = c(latency_results$congruent_latencies$trial_1, latency_results$congruent_latencies$trial_5, latency_results$congruent_latencies$trial_10, latency_results$congruent_latencies$trial_15),
+    Trial = factor(c(rep(1, length(latency_results$congruent_latencies$trial_1)),
+                     rep(5, length(latency_results$congruent_latencies$trial_5)),
+                     rep(10, length(latency_results$congruent_latencies$trial_10)),
+                     rep(15, length(latency_results$congruent_latencies$trial_15))))
+  )
+  return(latency_data)
+}
+
+plot_survival_curve_congruent = function(latency_data) {
+  library(survival)
+  library(survminer)
+
+  surv_obj = Surv(time = latency_data$Latency, event = rep(1, nrow(latency_data)))
+  fit = survfit(surv_obj ~ Trial, data = latency_data)
+
+  plot(fit,
+       col = c("blue", "red", "green", "purple"),
+       lwd = 2,
+       lty = 1:4,
+       main = "Survival Analysis for Bumblebee Latency",
+       xlab = "Time to Fountain (seconds)",
+       ylab = "Proportion of Bumblebee Not Reaching Fountain")
+
+    legend("topright",
+         legend = c("Trial 1", "Trial 5", "Trial 10", "Trial 15"),
+         col = c("blue", "red", "green", "purple"),
+         lwd = 2,
+         lty = 1:4)
+}
+
+
 ### MAIN ###
 data_path = "data/"
 top15_trials = get_top15_trials(data_path)
 
 ### Task 01 and 02 ###
 results = count_congruent_gates_fountain(top15_trials)
-print(paste("01. Fraction of gate and fountain congruency:", results$fraction_fountain_reinforce, "with SEM ", results$sem_fountain_reinforce))
+print(paste("01. Fraction of bee choosing same reinforced side and fountain:", results$fraction_fountain_reinforce, "with SEM ", results$sem_fountain_reinforce))
 print(paste("02. Fraction of yellow gates:", results$fraction_yellow_fountain_reinforced, "With SEM ", results$sem_yellow))
 print(paste("03. Fraction of blue gates:", results$fraction_blue_fountain_reinforced, "With SEM", results$sem_blue))
 
 library(ggplot2)
 
 data_for_plot = data.frame(
-  Category = c("Learned", "Did Not Learn"),
+  Category = c("Reinforced Side", "Non-Reinforced Side"),
   Fraction = c(results$fraction_fountain_reinforce, 1 - results$fraction_fountain_reinforce),
   SE = c(results$sem_fountain_reinforce, results$sem_fountain_reinforce)  # Same SEM for both groups
 )
@@ -329,7 +365,7 @@ ggplot(data_for_plot, aes(x = Category, y = Fraction, fill = Category)) +
                 width = 0.2, color = "black") +
   geom_text(aes(label = paste0(round(Fraction * 100, 1), "%")),
             vjust = -0.5) +
-  labs(title = "Congruency Effect: Reinforced Gate and Fountain Side",
+  labs(title = "Learning Effects on Reinforced vs. Non-Reinforced Side Choices",
        y = "Fraction",
        x = "") +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
@@ -337,7 +373,7 @@ ggplot(data_for_plot, aes(x = Category, y = Fraction, fill = Category)) +
 
 data_for_plot = data.frame(
   Color = rep(c("Yellow", "Blue"), each = 2),
-  Category = rep(c("Learned", "Did Not Learn"), 2),
+  Category = rep(c("Reinforced Side", "Non-Reinforced Side"), 2),
   Fraction = c(results$fraction_yellow_fountain_reinforced,
                1 - results$fraction_yellow_fountain_reinforced,
                results$fraction_blue_fountain_reinforced,
@@ -365,8 +401,8 @@ print(paste("04. Average latency for trial 1:", latency_results_task03$average_l
 print(paste("05. Average latency for trial 5:", latency_results_task03$average_latency_5))
 print(paste("06. Average latency for trial 10:", latency_results_task03$average_latency_10))
 print(paste("07. Average latency for trial 15:", latency_results_task03$average_latency_15))
-test = prepare_latency_data(latency_results_task03)
-plot_survival_curve(test)
+data_prep = prepare_latency_data(latency_results_task03)
+plot_survival_curve(data_prep)
 
 
 # For Task 04
@@ -375,6 +411,8 @@ print(paste("08. Average latency for trial 1 (congruent):", latency_results_task
 print(paste("09. Average latency for trial 5 (congruent):", latency_results_task04$congruent["trial_5"]))
 print(paste("10. Average latency for trial 10 (congruent):", latency_results_task04$congruent["trial_10"]))
 print(paste("11. Average latency for trial 15 (congruent):", latency_results_task04$congruent["trial_15"]))
+data_prep_task04 = prepare_congruent_data(latency_results_task04)
+plot_survival_curve_congruent(data_prep_task04)
 
 print(paste("12. Average latency for trial 1 (incongruent):", latency_results_task04$incongruent["trial_1"]))
 print(paste("13. Average latency for trial 5 (incongruent):", latency_results_task04$incongruent["trial_5"]))
