@@ -1,45 +1,53 @@
-# Project 11 - Apprentissage avec des bourdons
+# Project 11 - Learning with bumblebees (fr: Apprentissage avec des bourdons)
 
 ### Encoding: UTF-8
 
-Cette analyse se focalise sur le groupe de contrôle des bourdons **Bombus terrestris**, dans le cadre d'une étude plus large sur l'impact des facteurs de stress environnementaux sur le comportement d'apprentissage des bourdons. Nous examinons 187 trajectoires de bourdons dans un dispositif d'apprentissage automatisé de type Y-maze. Nous analysons les essais 1 à 15 pour observer l'évolution des comportements d'apprentissage, en tenant compte de facteurs tels que le côté renforcé, la couleur de la lumière et le côté de la fontaine.
+This analysis focuses on the control group of bumblebees **Bombus terrestris**. It is part of a larger study on the effects of environmental stressors on the learning behaviour of bumblebees. From 187 bumblebee trajectories in an automated Y-maze learning apparatus, we analysed trajectories from trials 1 to 15 to observe changes in learning behaviour. We focused on factors such as reinforced side, light colour and fountain side.
 
+## List of files
+1. README.md: an overview of the project
+2. analyse.R: Main script containing the code for data analysis, calculations, and visualisations used in the project.
+3. 180s_video.mp4: 3-minute video explanation of the calculation methods
+4. calculation_presentation.pdf: PDF version of the presentation
 
-## Description des données
+## Data description
 
-Chaque fichier de données contient 8 colonnes :
+Each data file contains 8 columns:
 
-| Colonne           | Description                                                               |
+| Column           | Description                                                               |
 |-------------------|---------------------------------------------------------------------------|
-| `t.f`             | Temps en termes de frames vidéo (10 fps)                                  |
-| `x.px`            | Position en pixels sur l'axe x                                            |
-| `y.px`            | Position en pixels sur l'axe y                                            |
-| `comp`            | Compartiment où se trouve le bourdon (voir diapos 3 et 4 pour détails)    |
-| `coul.renforce`   | Couleur renforcée lors du test (`yellow` ou `blue`)                       |
-| `cote.renforce`   | Côté où la couleur renforcée était placée (`left` ou `right`)             |
-| `id.bourdon`      | Identifiant unique pour chaque bourdon                                   |
-| `essai`           | Numéro d'essai du bourdon (varie entre **1** et **31**)                  |
+| `t.f`             | Time in frames (10 fps)                                  |
+| `x.px`            | Position in pixels on x-axis                        |
+| `y.px`            | Position in pixels on y-axis                                            |
+| `comp`            | Compartment where the bumblebee is (see the report for a visualisation)    |
+| `coul.renforce`   | Light colour for testing (`yellow` or `blue`)                       |
+| `cote.renforce`   | Side where the reinforced colour was placed (`left` or `right`)             |
+| `id.bourdon`      | Unique ID for each bumblebee                                   |
+| `essai`           | Bumblebee trial number (varies between **1** and **31**)       |
 
-- **Échelle :** 1 cm correspond à 75 pixels.
-- **Variation des Essais :** Le nombre d'essais par bourdon peut varier de **1 à 31**.
-- **Important :** Certains bourdons n'ont jamais atteint la zone de nourriture. Nous les **excluons** dans des analyses statistiques finales.
+- **Scale:** 1 cm corresponds to 75 pixels.
+- **Trial Variation:** The number of trials per bumblebee can vary from **1 to 31**.
+- **Important:** Some bumblebees never reached the feeding area. We **excluded** them in final statistical analyses.
 
-### Format de nom des fichiers
+### File name format
 
-Les fichiers de données sont nommés comme suit : `frame_date_bee_xy_trial=z_tab.csv`
+The data files are named as follows: `frame_date_bee_xy_trial=z_tab.csv`.
 
-| Élément       | Description                                          |
+| Element       | Description                                          |
 |---------------|------------------------------------------------------|
-| `date`        | Date du test au format `année-mois-jour`             |
-| `xy`          | Numéro d'identification du bourdon                   |
-| `z`           | Numéro de l'essai                                    |
+| `date`        | Testing date in `year-month-day` format
+             |
+| `xy`          | Bumblebee identification number
+                   |
+| `z`           | Trial number
+                                    |
 
 ---
-## Calculs à effectuer
 
-### 1. Fraction des choix pour le côté renforcé et la fontaine
+## Structure of the analysis performed
 
-- **Objectif :** Mesurer la fréquence à laquelle les bourdons choisissent la fontaine du même côté que la sortie renforcée (gauche-gauche ou droite-droite) sur les essais **1 à 15**. Inclure l’**erreur standard (± SE)** pour plus de précision.
+### 1. Fraction of reinforced side and fountain choices
+- **Objectif :** To measure the proportion of bumblebees ±SEM that successfully learned to navigate from a reinforced gate to reach the same side of the fountain over the first 15 trials.
 - **Visualisation :** Un **diagramme en barres** comparant la fraction totale des choix congruents et non congruents, pour montrer les différences dans le renforcement.
 
 ### 2. Fraction des choix pour le côté avec la couleur renforcée et la fontaine
