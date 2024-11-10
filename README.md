@@ -35,12 +35,9 @@ The data files are named as follows: `frame_date_bee_xy_trial=z_tab.csv`.
 
 | Element       | Description                                          |
 |---------------|------------------------------------------------------|
-| `date`        | Testing date in `year-month-day` format
-             |
-| `xy`          | Bumblebee identification number
-                   |
-| `z`           | Trial number
-                                    |
+| `date`        | Testing date in `year-month-day` format |
+| `xy`          | Bumblebee identification number |
+| `z`           | Trial number |
 
 ---
 
