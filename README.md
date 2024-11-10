@@ -46,26 +46,31 @@ The data files are named as follows: `frame_date_bee_xy_trial=z_tab.csv`.
 
 ## Structure of the analysis performed
 
-### 1. Fraction of reinforced side and fountain choices
-- **Objectif :** To measure the proportion of bumblebees ±SEM that successfully learned to navigate from a reinforced gate to reach the same side of the fountain over the first 15 trials.
-- **Visualisation :** Un **diagramme en barres** comparant la fraction totale des choix congruents et non congruents, pour montrer les différences dans le renforcement.
+The code is divided into two main sections: **functions** and  **main**. Functions are grouped by task (Tasks 01 & 02, Tasks 03 & 04, and Task 05) and separated by ### headers. The ### Main ### section executes the code using these functions.
 
-### 2. Fraction des choix pour le côté avec la couleur renforcée et la fontaine
+### Task 01: Fraction of reinforced side and fountain choices
+- **Objective :** To measure the proportion of bumblebees ±SEM that successfully learned to navigate from a reinforced gate to reach the same side of the fountain over the first 15 trials.
+- **Visualisation :** A **bar graph** to compare the total proportion of learned and unlearned bumblebees over the first 15 trials.
 
-- **Objectif :** Réaliser la même analyse de fraction ± SE que ci-dessus, en ajoutant les couleurs renforcées **jaune** (y) et **bleu** (b) avec les côtés renforcés **gauche** et **droite**. Il y a quatre groupes : yll, yrr, bll, brr.
-- **Visualisation :** Un **graphique comparatif** montrant les fractions pour les cas congruents et non congruents.
+### Task 02: Fraction of reinforced side with colour and the fountain
 
-### 3. Latence Moyenne entre Gate_Test et Arrivée à la Zone de Nourriture
+- **Objective :** To measure the proportion of bumblebees (±SEM) that chose the fountain on the same side as their reinforcement side, grouped by the reinforcement colours **yellow (y)** and **blue (b)**.
 
-- **Objectif :** Calculer la **latence moyenne** entre la sortie du compartiment `gate_test` et la première arrivée à une zone de nourriture (`fountain_left` ou `fountain_right`).
-- **Visualisation :** Une **courbe de survie** pour comparer les essais **1, 5, 10 et 15**.
+- **Visualisation :** A **bar graph** comparing the fractions of bumblebees that successfully learned versus those that failed to use the reinforced side and fountain side.
 
-### 4. Latence Apprentissage Réussi vs. Échoué
+### Task 03: Average Latency between `gate_test` and arrival at food zone
 
-- **Objectif :** Calculer la latence moyenne entre le dernier passage du bourdon dans le `gate_test` et sa première visite à la fontaine. Comparer les latences de deux groupes : **apprentissage réussi** (choix du même côté, par ex. gauche-gauche) et **apprentissage échoué** (côtés différents).
-- **Visualisation :** Deux **courbes de survie** par couleur, comparant les essais **1, 5, 10 et 15**.
+- **Objective :** To measure the **average latency** between the exit of the `gate_test` compartment and the first arrival at a feeding area (`fountain_left` or `fountain_right`)
 
-### 5. Vitesse Moyenne pour Atteindre la Zone de Nourriture
+- **Visualisation :** A **survival curve** to compare trials **1, 5, 10 and 15**.
 
-- **Objectif :** Calculer la **vitesse moyenne ± SE** entre le `gate_test` et la première arrivée à une (`fountain_left` ou `fountain_right`), et comparer cette vitesse à travers les essais **1, 5, 10 et 15**.
+### Task 04: Latency Learning Successful vs. Failed between `gate_test` and arrival at food zone
+
+- **Objectif :** To identify the latencies of bumblebees that **successfully learn** (choose the same side, e.g. left-left).
+
+- **Visualisation :** A **survival curve** to compare trials **1, 5, 10 and 15**.
+
+### Task 05: Average speed from `gate_test` to reach the feeding zone
+
+- **Objectif :** To calculate the **average speed ± SE** between the `gate_test` and the first arrival at a (`fountain_left` or `fountain_right`), and to compare this speed across trials **1, 5, 10 and 15**.
 ---
