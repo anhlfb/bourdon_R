@@ -46,7 +46,7 @@ The data files are named as follows: `frame_date_bee_xy_trial=z_tab.csv`.
 
 ## Structure of the analysis performed
 
-The code is divided into two main sections: **functions** and  **main**. Functions are grouped by task (Tasks 01 & 02, Tasks 03 & 04, and Task 05) and separated by ### headers. The ### Main ### section executes the code using these functions.
+The code is divided into two main sections: `functions` and  `main`. Functions are grouped by task (Tasks 01 & 02, Tasks 03 & 04, and Task 05) and separated by ### headers. The `main` section executes the code using these functions.
 
 ### Task 01: Fraction of reinforced side and fountain choices
 - **Objective :** To measure the proportion of bumblebees ±SEM that successfully learned to navigate from a reinforced gate to reach the same side of the fountain over the first 15 trials.
