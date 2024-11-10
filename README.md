@@ -10,8 +10,8 @@ This analysis focuses on the control group of bumblebees **Bombus terrestris**. 
 3. 180s_video.mp4: 3-minute video explanation of the calculation methods
 4. calculation_presentation.pdf: PDF version of the presentation
 
-## Data description
 
+## Data description
 Each data file contains 8 columns:
 
 | Column           | Description                                                               |

@@ -92,20 +92,30 @@ count_congruent_gates_fountain = function(file_list) {
 
   # SEM Calculation
   vec_fountain_reinforce = c(rep(1, left_left + right_right), rep(0, not_the_case))
+  vec_not_reinforced = c(rep(1, not_the_case), rep(0, nbtop15 - not_the_case))
   vec_yellow = c(rep(1, yellow_ll + yellow_rr), rep(0, nb_yellow - (yellow_ll + yellow_rr)))
   vec_blue = c(rep(1, blue_ll + blue_rr), rep(0, nb_blue - (blue_ll + blue_rr)))
+  vec_not_reinforced_yellow = c(rep(1, nb_yellow - (yellow_ll + yellow_rr)), rep(0, yellow_ll + yellow_rr))
+  vec_not_reinforced_blue = c(rep(1, nb_blue - (blue_ll + blue_rr)), rep(0, blue_ll + blue_rr))
 
   sem_fountain_reinforce = calculate_sd_se(vec_fountain_reinforce)
+  sem_not_reinforced = calculate_sd_se(vec_not_reinforced)
+
   sem_yellow = calculate_sd_se(vec_yellow)
   sem_blue = calculate_sd_se(vec_blue)
+  sem_not_reinforced_yellow = calculate_sd_se(vec_not_reinforced_yellow)
+  sem_not_reinforced_blue = calculate_sd_se(vec_not_reinforced_blue)
 
   return(list(
     fraction_fountain_reinforce = fraction_fountain_reinforce,
     fraction_yellow_fountain_reinforced = fraction_yellow_fountain_reinforced,
     fraction_blue_fountain_reinforced = fraction_blue_fountain_reinforced,
     sem_fountain_reinforce = sem_fountain_reinforce,
+    sem_not_reinforced = sem_not_reinforced,
     sem_yellow = sem_yellow,
-    sem_blue = sem_blue
+    sem_blue = sem_blue,
+    sem_not_reinforced_yellow = sem_not_reinforced_yellow,
+    sem_not_reinforced_blue = sem_not_reinforced_blue
   ))
 }
 
@@ -126,13 +136,10 @@ calculate_latency = function(file_list, trials = c(1, 5, 10, 15), condition = NU
 
     for (trial in trials) {
       trial_data = subset(data, essai == trial)
-      if (nrow(trial_data) == 0) next
 
       relevant_data = subset(trial_data, comp %in% c("fountain_left", "fountain_right", "gate_test"))
-      #if (nrow(relevant_data) == 0) next
 
       fountain_visits = subset(relevant_data, comp %in% c("fountain_left", "fountain_right"))
-      #if (nrow(fountain_visits) == 0) next
 
       first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
       first_fountain_time = first_fountain_visit$t.f
@@ -226,14 +233,11 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
     for (trial in trials) {
       trial_data = subset(data, essai == trial)
 
-      #if (nrow(trial_data) == 0) next
 
       gate_point = trial_data[trial_data$comp == "gate_test", ]
-      #if (nrow(gate_point) == 0) next
       gate_point = gate_point[which.max(gate_point$t.f), ]
 
       fountain_visits = trial_data[trial_data$comp %in% c("fountain_left", "fountain_right"), ]
-      #if (nrow(fountain_visits) == 0) next
       first_fountain_visit = fountain_visits[which.min(fountain_visits$t.f), ]
 
       distance_cm = sqrt((first_fountain_visit$x.cm - gate_point$x.cm)^2 +
@@ -241,8 +245,6 @@ calculate_average_speed = function(file_list, trials = c(1, 5, 10, 15)) {
 
       time_taken_frames = first_fountain_visit$t.f - gate_point$t.f
       time_taken_seconds = time_taken_frames / 10
-
-      #if (time_taken_seconds == 0) next
 
       average_speed_cm_per_s = distance_cm / time_taken_seconds
 
@@ -295,7 +297,7 @@ plot_survival_curve = function(latency_data) {
        col = c("blue", "red", "green", "purple"),
        lwd = 2,
        lty = 1:4,
-       main = "Survival Analysis for Bumblebee Latency",
+       main = "Figure 5. Time to Reach Fountain Across Trials",
        xlab = "Time to Fountain (seconds)",
        ylab = "Proportion of Bumblebee Not Reaching Fountain")
 
@@ -329,7 +331,7 @@ plot_survival_curve_congruent = function(latency_data) {
        col = c("blue", "red", "green", "purple"),
        lwd = 2,
        lty = 1:4,
-       main = "Survival Analysis for Bumblebee Latency",
+       main = "Figure 6. Time to Reach Fountain for Congruent Reinforcement",
        xlab = "Time to Fountain (seconds)",
        ylab = "Proportion of Bumblebee Not Reaching Fountain")
 
@@ -347,9 +349,12 @@ top15_trials = get_top15_trials(data_path)
 
 ### Task 01 and 02 ###
 results = count_congruent_gates_fountain(top15_trials)
-print(paste("01. Fraction of bee choosing same reinforced side and fountain:", results$fraction_fountain_reinforce, "with SEM ", results$sem_fountain_reinforce))
-print(paste("02. Fraction of yellow gates:", results$fraction_yellow_fountain_reinforced, "With SEM ", results$sem_yellow))
-print(paste("03. Fraction of blue gates:", results$fraction_blue_fountain_reinforced, "With SEM", results$sem_blue))
+print(paste("01a. Fraction of reinforced side and fountain:", results$fraction_fountain_reinforce, "with SEM ", results$sem_fountain_reinforce))
+print(paste("01b. Fraction of not reinforced side and fountain:", 1-results$fraction_fountain_reinforce, "with SEM ", results$sem_not_reinforced))
+print(paste("02a. Fraction of yellow gates:", results$fraction_yellow_fountain_reinforced, "With SEM ", results$sem_yellow))
+print(paste("02a. Fraction of yellow gates:", 1-results$fraction_yellow_fountain_reinforced, "With SEM ", results$sem_not_reinforced_yellow))
+print(paste("03c. Fraction of blue gates:", results$fraction_blue_fountain_reinforced, "With SEM", results$sem_blue))
+print(paste("03d. Fraction of blue gates:", 1-results$fraction_blue_fountain_reinforced, "With SEM", results$sem_not_reinforced_blue))
 
 library(ggplot2)
 
@@ -365,8 +370,8 @@ ggplot(data_for_plot, aes(x = Category, y = Fraction, fill = Category)) +
                 width = 0.2, color = "black") +
   geom_text(aes(label = paste0(round(Fraction * 100, 1), "%")),
             vjust = -0.5) +
-  labs(title = "Learning Effects on Reinforced vs. Non-Reinforced Side Choices",
-       y = "Fraction",
+  labs(title = "Figure 3. Learning Effects with Side Reinforcement",
+       y = "Proportion",
        x = "") +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   theme_minimal()
@@ -388,9 +393,9 @@ ggplot(data_for_plot, aes(x = Color, y = Fraction, fill = Category)) +
                 width = 0.2, color = "black", position = position_dodge(width = 0.8)) +
   geom_text(aes(label = paste0(round(Fraction * 100, 1), "%")),
             vjust = -0.5, position = position_dodge(width = 0.8)) +
-  labs(title = "Congruency Effect by Color (Yellow & Blue) with SEM",
-       y = "Fraction",
-       x = "Color") +
+  labs(title = "Figure 4. Learning Effects with Side and Colour Reinforcement",
+       y = "Proportion",
+       x = "Colour") +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   theme_minimal()
 
