@@ -7,8 +7,10 @@ This analysis focuses on the control group of bumblebees **Bombus terrestris**. 
 ## List of files
 1. README.md: an overview of the project
 2. analyse.R: Main script containing the code for data analysis, calculations, and visualisations used in the project.
-3. 180s_video.mp4: 3-minute video explanation of the calculation methods
-4. calculation_presentation.pdf: PDF version of the presentation
+3. result folder: Figures from this analysis
+4. summary.pdf: A short summary of structure of raw data and
+5. data: empty folder
+
 
 
 ## Data description
@@ -29,17 +31,6 @@ Each data file contains 8 columns:
 - **Trial Variation:** The number of trials per bumblebee can vary from **1 to 31**.
 - **Important:** Some bumblebees never reached the feeding area. We **excluded** them in final statistical analyses.
 
-### File name format
-
-The data files are named as follows: `frame_date_bee_xy_trial=z_tab.csv`.
-
-| Element       | Description                                          |
-|---------------|------------------------------------------------------|
-| `date`        | Testing date in `year-month-day` format |
-| `xy`          | Bumblebee identification number |
-| `z`           | Trial number |
-
----
 
 ## Structure of the analysis performed
 
