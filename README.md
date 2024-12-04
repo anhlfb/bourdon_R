@@ -1,6 +1,6 @@
 # Project 11 - Learning with bumblebees (fr: Apprentissage avec des bourdons)
 
-### Encoding: UTF-8
+Encoding: UTF-8
 
 This analysis focuses on the control group of bumblebees **Bombus terrestris**. It is part of a larger study on the effects of environmental stressors on the learning behaviour of bumblebees. From 187 bumblebee trajectories in an automated Y-maze learning apparatus, we analysed trajectories from trials 1 to 15 to observe changes in learning behaviour. We focused on factors such as reinforced side, light colour and fountain side.
 
